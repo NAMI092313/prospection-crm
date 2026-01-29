@@ -44,16 +44,21 @@ export default function ProspectDetailPage() {
     );
   }
 
-  const onAddInteraction = (e: React.FormEvent) => {
+  const onAddInteraction = async (e: React.FormEvent) => {
     e.preventDefault();
-    addInteraction(prospect.id, {
-      type,
-      date: new Date(date).toISOString(),
-      notes,
-      duree: duree === "" ? undefined : Number(duree),
-    });
-    setNotes("");
-    setDuree("");
+    try {
+      await addInteraction(prospect.id, {
+        type,
+        date: new Date(date).toISOString(),
+        notes,
+        duree: duree === "" ? undefined : Number(duree),
+      });
+      setNotes("");
+      setDuree("");
+    } catch (error) {
+      console.error(error);
+      alert('❌ Erreur lors de l\'ajout de l\'interaction');
+    }
   };
 
   const handleCreateEvent = async (e: React.FormEvent) => {
@@ -81,7 +86,7 @@ export default function ProspectDetailPage() {
         alert('✅ Événement créé dans Google Calendar !');
         setShowEventModal(false);
         // Ajouter aussi une interaction
-        addInteraction(prospect.id, {
+        await addInteraction(prospect.id, {
           type: 'reunion',
           date: new Date(eventForm.startDate).toISOString(),
           notes: `RDV planifié: ${eventForm.title || 'Rendez-vous'}`,
@@ -109,9 +114,14 @@ export default function ProspectDetailPage() {
             <button className="px-4 py-2 rounded border" onClick={() => router.push("/")}>Retour</button>
             <button
               className="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700"
-              onClick={() => {
-                deleteProspect(prospect.id);
-                router.push("/");
+              onClick={async () => {
+                try {
+                  await deleteProspect(prospect.id);
+                  router.push("/");
+                } catch (error) {
+                  console.error(error);
+                  alert('❌ Erreur lors de la suppression');
+                }
               }}
             >
               Supprimer

@@ -28,20 +28,25 @@ export default function NewProspectPage() {
   const [status, setStatus] = useState<ProspectStatus>("nouveau");
   const [valeurEstimee, setValeurEstimee] = useState<number | "">("");
 
-  const onSubmit = (e: React.FormEvent) => {
+  const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const created = addProspect({
-      nom,
-      entreprise,
-      email,
-      telephone,
-      adresse,
-      status,
-      valeurEstimee: valeurEstimee === "" ? undefined : Number(valeurEstimee),
-      dateCreation: new Date().toISOString(),
-      interactions: [],
-    });
-    router.push(`/prospects/${created.id}`);
+    try {
+      const created = await addProspect({
+        nom,
+        entreprise,
+        email,
+        telephone,
+        adresse,
+        status,
+        valeurEstimee: valeurEstimee === "" ? undefined : Number(valeurEstimee),
+        dateCreation: new Date().toISOString(),
+        interactions: [],
+      });
+      router.push(`/prospects/${created.id}`);
+    } catch (error) {
+      console.error(error);
+      alert('❌ Erreur lors de la création du prospect');
+    }
   };
 
   return (

@@ -5,7 +5,7 @@ import Link from 'next/link';
 
 interface ProspectCardProps {
   prospect: Prospect;
-  onDelete: (id: string) => void;
+  onDelete: (id: string) => void | Promise<void>;
 }
 
 const statusColors: Record<ProspectStatus, string> = {
