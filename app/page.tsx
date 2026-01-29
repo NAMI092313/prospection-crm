@@ -3,15 +3,62 @@
 import { useProspects } from "@/hooks/useProspects";
 import { ProspectCard } from "@/components/ProspectCard";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
+import type { ProspectStatus } from "@/types";
+
+const statuses: ProspectStatus[] = [
+  "nouveau",
+  "contact",
+  "qualification",
+  "proposition",
+  "negociation",
+  "conclu",
+  "perdu",
+];
+
+const statusLabels: Record<ProspectStatus, string> = {
+  nouveau: 'Nouveau',
+  contact: 'Contact établi',
+  qualification: 'Qualification',
+  proposition: 'Proposition',
+  negociation: 'Négociation',
+  conclu: 'Conclu',
+  perdu: 'Perdu',
+};
 
 export default function Home() {
   const { prospects, isLoading, deleteProspect } = useProspects();
   const [mounted, setMounted] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<ProspectStatus | "all">("all");
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Filtrer et rechercher les prospects
+  const filteredProspects = useMemo(() => {
+    let result = prospects;
+
+    // Filtrer par statut
+    if (statusFilter !== "all") {
+      result = result.filter((p) => p.status === statusFilter);
+    }
+
+    // Rechercher par nom, email, téléphone, entreprise
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter(
+        (p) =>
+          p.nom.toLowerCase().includes(query) ||
+          p.email.toLowerCase().includes(query) ||
+          p.telephone.toLowerCase().includes(query) ||
+          p.entreprise.toLowerCase().includes(query)
+      );
+    }
+
+    return result;
+  }, [prospects, searchQuery, statusFilter]);
 
   if (!mounted) return null;
 
@@ -54,23 +101,91 @@ export default function Home() {
           </div>
         </div>
 
+        {/* Recherche et filtres */}
+        <div className="bg-white rounded-lg shadow p-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                🔍 Rechercher
+              </label>
+              <input
+                type="text"
+                placeholder="Nom, email, téléphone, entreprise..."
+                className="w-full rounded-lg border-gray-300 px-4 py-2 border focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                🏷️ Filtrer par statut
+              </label>
+              <select
+                className="w-full rounded-lg border-gray-300 px-4 py-2 border focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value as ProspectStatus | "all")}
+              >
+                <option value="all">Tous les statuts</option>
+                {statuses.map((status) => (
+                  <option key={status} value={status}>
+                    {statusLabels[status]}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+          {(searchQuery || statusFilter !== "all") && (
+            <div className="mt-4 flex items-center justify-between">
+              <p className="text-sm text-gray-600">
+                {filteredProspects.length} résultat{filteredProspects.length > 1 ? "s" : ""} trouvé{filteredProspects.length > 1 ? "s" : ""}
+              </p>
+              <button
+                onClick={() => {
+                  setSearchQuery("");
+                  setStatusFilter("all");
+                }}
+                className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+              >
+                Réinitialiser les filtres
+              </button>
+            </div>
+          )}
+        </div>
+
         {isLoading ? (
           <div className="text-center py-12">
             <p className="text-gray-600">Chargement...</p>
           </div>
-        ) : prospects.length === 0 ? (
+        ) : filteredProspects.length === 0 ? (
           <div className="bg-white rounded-lg shadow p-12 text-center">
-            <p className="text-gray-600 text-lg mb-4">Aucun prospect pour le moment</p>
-            <Link
-              href="/prospects/new"
-              className="inline-block bg-green-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-green-700 transition"
-            >
-              Ajouter un prospect
-            </Link>
+            {searchQuery || statusFilter !== "all" ? (
+              <>
+                <p className="text-gray-600 text-lg mb-4">Aucun prospect ne correspond à votre recherche</p>
+                <button
+                  onClick={() => {
+                    setSearchQuery("");
+                    setStatusFilter("all");
+                  }}
+                  className="inline-block bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition"
+                >
+                  Réinitialiser les filtres
+                </button>
+              </>
+            ) : (
+              <>
+                <p className="text-gray-600 text-lg mb-4">Aucun prospect pour le moment</p>
+                <Link
+                  href="/prospects/new"
+                  className="inline-block bg-green-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-green-700 transition"
+                >
+                  Ajouter un prospect
+                </Link>
+              </>
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {prospects.map((prospect) => (
+            {filteredProspects.map((prospect) => (
               <ProspectCard
                 key={prospect.id}
                 prospect={prospect}
