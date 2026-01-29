@@ -8,10 +8,15 @@ export const config = {
 };
 
 export function middleware(req: NextRequest) {
+  // Désactiver Basic Auth en local (développement)
+  if (process.env.NODE_ENV === 'development') {
+    return NextResponse.next();
+  }
+
   const user = process.env.BASIC_AUTH_USER;
   const pass = process.env.BASIC_AUTH_PASS;
 
-  // Pas de protection si variables non définies (utile en dev)
+  // Pas de protection si variables non définies
   if (!user || !pass) {
     return NextResponse.next();
   }

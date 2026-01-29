@@ -4,6 +4,8 @@ import { useParams, useRouter } from "next/navigation";
 import { useProspects } from "@/hooks/useProspects";
 import type { InteractionType } from "@/types";
 import { useMemo, useState } from "react";
+import { GoogleCalendarButton } from "@/components/GoogleCalendarButton";
+import { useSession } from "next-auth/react";
 
 const interactionTypes: InteractionType[] = ["appel", "email", "reunion", "sms", "visite"];
 
@@ -11,6 +13,7 @@ export default function ProspectDetailPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const { prospects, addInteraction, deleteProspect } = useProspects();
+  const { data: session } = useSession();
 
   const prospect = useMemo(() => prospects.find((p) => p.id === params.id), [prospects, params.id]);
 
@@ -18,6 +21,15 @@ export default function ProspectDetailPage() {
   const [date, setDate] = useState<string>(new Date().toISOString().slice(0, 16));
   const [notes, setNotes] = useState("");
   const [duree, setDuree] = useState<number | "">("");
+  const [showEventModal, setShowEventModal] = useState(false);
+  const [eventLoading, setEventLoading] = useState(false);
+  const [eventForm, setEventForm] = useState({
+    title: "",
+    description: "",
+    startDate: new Date().toISOString().slice(0, 16),
+    endDate: new Date(Date.now() + 3600000).toISOString().slice(0, 16), // +1h
+    location: "",
+  });
 
   if (!prospect) {
     return (
@@ -42,6 +54,47 @@ export default function ProspectDetailPage() {
     });
     setNotes("");
     setDuree("");
+  };
+
+  const handleCreateEvent = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!session) return;
+
+    setEventLoading(true);
+    try {
+      const response = await fetch('/api/calendar/create-event', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          summary: eventForm.title || `RDV avec ${prospect.nom}`,
+          description: eventForm.description || `Rendez-vous avec ${prospect.nom} (${prospect.entreprise})`,
+          startTime: new Date(eventForm.startDate).toISOString(),
+          endTime: new Date(eventForm.endDate).toISOString(),
+          location: eventForm.location || prospect.adresse,
+          attendees: [prospect.email],
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert('✅ Événement créé dans Google Calendar !');
+        setShowEventModal(false);
+        // Ajouter aussi une interaction
+        addInteraction(prospect.id, {
+          type: 'reunion',
+          date: new Date(eventForm.startDate).toISOString(),
+          notes: `RDV planifié: ${eventForm.title || 'Rendez-vous'}`,
+        });
+      } else {
+        alert('❌ Erreur: ' + data.error);
+      }
+    } catch (error) {
+      alert('❌ Erreur lors de la création de l\'événement');
+      console.error(error);
+    } finally {
+      setEventLoading(false);
+    }
   };
 
   return (
@@ -77,6 +130,14 @@ export default function ProspectDetailPage() {
             )}
             <p>🗓️ Créé le {new Date(prospect.dateCreation).toLocaleDateString("fr-FR")}</p>
           </div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow p-6">
+          <h2 className="text-lg font-semibold mb-4">Google Calendar</h2>
+          <GoogleCalendarButton 
+            showCreateButton={true}
+            onCreateEvent={() => setShowEventModal(true)}
+          />
         </div>
 
         <div className="bg-white rounded-lg shadow p-6">
@@ -129,6 +190,84 @@ export default function ProspectDetailPage() {
             </ul>
           )}
         </div>
+
+        {/* Modal pour créer un événement Calendar */}
+        {showEventModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+              <h3 className="text-xl font-bold mb-4">Planifier un rendez-vous</h3>
+              <form onSubmit={handleCreateEvent} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Titre</label>
+                  <input
+                    type="text"
+                    className="w-full rounded border px-3 py-2"
+                    placeholder={`RDV avec ${prospect.nom}`}
+                    value={eventForm.title}
+                    onChange={(e) => setEventForm({ ...eventForm, title: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                  <textarea
+                    className="w-full rounded border px-3 py-2"
+                    rows={2}
+                    placeholder={`Rendez-vous avec ${prospect.nom}`}
+                    value={eventForm.description}
+                    onChange={(e) => setEventForm({ ...eventForm, description: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Début</label>
+                  <input
+                    type="datetime-local"
+                    className="w-full rounded border px-3 py-2"
+                    value={eventForm.startDate}
+                    onChange={(e) => setEventForm({ ...eventForm, startDate: e.target.value })}
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Fin</label>
+                  <input
+                    type="datetime-local"
+                    className="w-full rounded border px-3 py-2"
+                    value={eventForm.endDate}
+                    onChange={(e) => setEventForm({ ...eventForm, endDate: e.target.value })}
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Lieu</label>
+                  <input
+                    type="text"
+                    className="w-full rounded border px-3 py-2"
+                    placeholder={prospect.adresse}
+                    value={eventForm.location}
+                    onChange={(e) => setEventForm({ ...eventForm, location: e.target.value })}
+                  />
+                </div>
+                <div className="flex gap-2 justify-end pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowEventModal(false)}
+                    className="px-4 py-2 rounded border hover:bg-gray-50"
+                    disabled={eventLoading}
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
+                    disabled={eventLoading}
+                  >
+                    {eventLoading ? 'Création...' : 'Créer l\'événement'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
