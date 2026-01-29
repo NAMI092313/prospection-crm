@@ -42,12 +42,34 @@
 - Nombre de ventes conclues
 
 #### 5. Intégration Google Calendar ✨ NOUVEAU
-- Connexion avec compte Google
-- Planification de rendez-vous directement depuis un prospect
-- Création automatique d'événements avec:
+- ✅ Connexion avec compte Google (OAuth 2.0 via NextAuth)
+- ✅ Planification de rendez-vous directement depuis un prospect
+- ✅ Création automatique d'événements avec:
   - Email du prospect comme invité
   - Adresse du prospect comme lieu
   - Rappels automatiques (1 jour + 30 min avant)
+- ✅ Synchronisation bidirectionnelle avec Google Calendar
+- ✅ Fonctionnel sur localhost ET Vercel production
+
+### 🔧 Stack technique Google Calendar
+
+**Libraries:**
+- `next-auth@4.24.13` - Gestion OAuth2 et sessions
+- `googleapis@170.1.0` - API Google Calendar
+
+**Architecture:**
+- `lib/auth.ts` - Configuration NextAuth avec Google Provider
+- `app/api/auth/[...nextauth]/route.ts` - Route NextAuth
+- `app/api/calendar/create-event/route.ts` - Endpoint création d'événements
+- `components/GoogleCalendarButton.tsx` - Composant sign-in/out
+- `app/prospects/[id]/page.tsx` - Intégration dans la page prospect
+- `types/next-auth.d.ts` - Types TypeScript étendus
+
+**Variables d'environnement requises:**
+- `GOOGLE_CLIENT_ID` - OAuth client ID
+- `GOOGLE_CLIENT_SECRET` - OAuth client secret
+- `NEXTAUTH_SECRET` - Clé de chiffrement des sessions
+- `NEXTAUTH_URL` - URL de base (http://localhost:3000 ou https://domaine.vercel.app)
 - Ajout automatique d'une interaction "réunion" lors de la création
 
 #### 6. Sécurité

@@ -1,6 +1,14 @@
 # CRM Prospection
 
-Application Next.js (TypeScript, Tailwind) pour le suivi de prospection.
+Application Next.js (TypeScript, Tailwind) pour le suivi de prospection avec intégration Google Calendar.
+
+## Fonctionnalités
+
+- ✅ Gestion des prospects (création, édition, suppression)
+- ✅ Historique des interactions
+- ✅ Intégration Google Calendar (création d'événements)
+- ✅ Authentification OAuth2 via NextAuth
+- ✅ Données stockées en localStorage (client-side)
 
 ## Démarrer en local
 
@@ -11,32 +19,43 @@ npm run dev
 
 Ouvrir http://localhost:3000
 
-## Sécurisation (Basic Auth)
+## Configuration Google Calendar (OAuth)
 
-Une protection par mot de passe est fournie via `middleware.ts`.
-Elle est activée uniquement si les variables d'environnement sont définies:
+### 1. Créer les credentials Google
 
+1. Aller sur [Google Cloud Console](https://console.cloud.google.com)
+2. Créer un nouveau projet
+3. Activer l'API Google Calendar
+4. Créer des identifiants OAuth 2.0 (type: Application Web)
+5. Ajouter les URL de redirection:
+   - `http://localhost:3000/api/auth/callback/google` (développement)
+   - `https://votre-domaine.vercel.app/api/auth/callback/google` (production)
+
+### 2. Configuration locale (.env.local)
+
+```env
+GOOGLE_CLIENT_ID=votre_client_id.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=votre_client_secret
+NEXTAUTH_SECRET=votre_secret_aleatoire
+NEXTAUTH_URL=http://localhost:3000
 ```
-BASIC_AUTH_USER=demo
-BASIC_AUTH_PASS=change-me
-```
 
-En local (facultatif):
-
+Générer un secret NextAuth sécurisé:
 ```bash
-BASIC_AUTH_USER=demo BASIC_AUTH_PASS=monsecret npm run dev
+openssl rand -base64 32
 ```
 
-## Déploiement sécurisé sur Vercel
+## Déploiement sur Vercel
 
-1. Créer un dépôt Git (privé de préférence) et pousser le code.
-2. Sur Vercel, importer le dépôt.
-3. Dans Project Settings > Environment Variables, ajouter:
-   - `BASIC_AUTH_USER`
-   - `BASIC_AUTH_PASS`
-4. Lancer le déploiement. L'URL publique demandera un mot de passe.
+1. Pousser le code sur GitHub
+2. Importer le projet sur Vercel
+3. Ajouter les variables d'environnement (Settings > Environment Variables):
+   - `GOOGLE_CLIENT_ID` ✅ Production, Preview, Development
+   - `GOOGLE_CLIENT_SECRET` ✅ Production, Preview, Development
+   - `NEXTAUTH_SECRET` ✅ Production, Preview, Development
+   - `NEXTAUTH_URL=https://votre-projet.vercel.app` ✅ Production, Preview, Development
 
-Remarque: L'app stocke les données dans `localStorage` côté navigateur; vos données locales ne sont pas publiées.
+4. Redéployer et tester
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
