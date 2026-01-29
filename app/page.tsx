@@ -26,7 +26,7 @@ export default function Home() {
           <div className="flex justify-between items-center">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">CRM Prospection</h1>
-              <p className="text-gray-600 mt-1">Suivi de prospection pour votre femme</p>
+              <p className="text-gray-600 mt-1">Mon suivi de prospection</p>
             </div>
             <Link
               href="/prospects/new"
