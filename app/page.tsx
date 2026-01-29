@@ -2,6 +2,7 @@
 
 import { useProspects } from "@/hooks/useProspects";
 import { ProspectCard } from "@/components/ProspectCard";
+import { KanbanBoard } from "@/components/KanbanBoard";
 import Link from "next/link";
 import { useEffect, useState, useMemo } from "react";
 import type { ProspectStatus } from "@/types";
@@ -27,10 +28,11 @@ const statusLabels: Record<ProspectStatus, string> = {
 };
 
 export default function Home() {
-  const { prospects, isLoading, deleteProspect } = useProspects();
+  const { prospects, isLoading, deleteProspect, updateProspect } = useProspects();
   const [mounted, setMounted] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<ProspectStatus | "all">("all");
+  const [viewMode, setViewMode] = useState<"grid" | "kanban">("grid");
 
   useEffect(() => {
     setMounted(true);
@@ -75,12 +77,36 @@ export default function Home() {
               <h1 className="text-3xl font-bold text-gray-900">CRM Prospection</h1>
               <p className="text-gray-600 mt-1">Mon suivi de prospection</p>
             </div>
-            <Link
-              href="/prospects/new"
-              className="bg-green-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-green-700 transition"
-            >
-              ➕ Nouveau Prospect
-            </Link>
+            <div className="flex gap-3">
+              <div className="flex bg-gray-100 rounded-lg p-1">
+                <button
+                  onClick={() => setViewMode("grid")}
+                  className={`px-4 py-2 rounded-md font-medium transition ${
+                    viewMode === "grid"
+                      ? "bg-white text-gray-900 shadow"
+                      : "text-gray-600 hover:text-gray-900"
+                  }`}
+                >
+                  📊 Grille
+                </button>
+                <button
+                  onClick={() => setViewMode("kanban")}
+                  className={`px-4 py-2 rounded-md font-medium transition ${
+                    viewMode === "kanban"
+                      ? "bg-white text-gray-900 shadow"
+                      : "text-gray-600 hover:text-gray-900"
+                  }`}
+                >
+                  📋 Kanban
+                </button>
+              </div>
+              <Link
+                href="/prospects/new"
+                className="bg-green-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-green-700 transition"
+              >
+                ➕ Nouveau Prospect
+              </Link>
+            </div>
           </div>
         </div>
       </header>
@@ -183,6 +209,14 @@ export default function Home() {
               </>
             )}
           </div>
+        ) : viewMode === "kanban" ? (
+          <KanbanBoard
+            prospects={filteredProspects}
+            onUpdateStatus={async (id, status) => {
+              await updateProspect(id, { status });
+            }}
+            onDelete={deleteProspect}
+          />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredProspects.map((prospect) => (
