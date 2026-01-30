@@ -9,6 +9,16 @@ import { useSession } from "next-auth/react";
 
 const interactionTypes: InteractionType[] = ["appel", "email", "reunion", "sms", "visite"];
 
+// Helper pour formater une date en timezone locale pour input datetime-local
+const formatDateTimeLocal = (date: Date): string => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+};
+
 export default function ProspectDetailPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
@@ -18,7 +28,7 @@ export default function ProspectDetailPage() {
   const prospect = useMemo(() => prospects.find((p) => p.id === params.id), [prospects, params.id]);
 
   const [type, setType] = useState<InteractionType>("appel");
-  const [date, setDate] = useState<string>(new Date().toISOString().slice(0, 16));
+  const [date, setDate] = useState<string>(formatDateTimeLocal(new Date()));
   const [notes, setNotes] = useState("");
   const [duree, setDuree] = useState<number | "">("");
   const [showEventModal, setShowEventModal] = useState(false);
@@ -36,8 +46,8 @@ export default function ProspectDetailPage() {
   const [eventForm, setEventForm] = useState({
     title: "",
     description: "",
-    startDate: new Date().toISOString().slice(0, 16),
-    endDate: new Date(Date.now() + 3600000).toISOString().slice(0, 16), // +1h
+    startDate: formatDateTimeLocal(new Date()),
+    endDate: formatDateTimeLocal(new Date(Date.now() + 3600000)), // +1h
     location: "",
   });
 
