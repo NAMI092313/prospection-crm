@@ -12,7 +12,7 @@ const interactionTypes: InteractionType[] = ["appel", "email", "reunion", "sms",
 export default function ProspectDetailPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
-  const { prospects, addInteraction, deleteProspect } = useProspects();
+  const { prospects, addInteraction, deleteProspect, updateProspect } = useProspects();
   const { data: session } = useSession();
 
   const prospect = useMemo(() => prospects.find((p) => p.id === params.id), [prospects, params.id]);
@@ -23,6 +23,16 @@ export default function ProspectDetailPage() {
   const [duree, setDuree] = useState<number | "">("");
   const [showEventModal, setShowEventModal] = useState(false);
   const [eventLoading, setEventLoading] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [isEditLoading, setIsEditLoading] = useState(false);
+  const [editForm, setEditForm] = useState({
+    nom: prospect?.nom || "",
+    entreprise: prospect?.entreprise || "",
+    email: prospect?.email || "",
+    telephone: prospect?.telephone || "",
+    adresse: prospect?.adresse || "",
+    valeurEstimee: prospect?.valeurEstimee || "",
+  });
   const [eventForm, setEventForm] = useState({
     title: "",
     description: "",
@@ -102,6 +112,28 @@ export default function ProspectDetailPage() {
     }
   };
 
+  const handleEditProspect = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsEditLoading(true);
+    try {
+      await updateProspect(prospect.id, {
+        nom: editForm.nom,
+        entreprise: editForm.entreprise,
+        email: editForm.email,
+        telephone: editForm.telephone,
+        adresse: editForm.adresse,
+        valeurEstimee: editForm.valeurEstimee ? Number(editForm.valeurEstimee) : null,
+      });
+      alert('✅ Prospect mis à jour avec succès!');
+      setShowEditModal(false);
+    } catch (error) {
+      console.error(error);
+      alert('❌ Erreur lors de la mise à jour');
+    } finally {
+      setIsEditLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">
@@ -112,6 +144,22 @@ export default function ProspectDetailPage() {
           </div>
           <div className="flex gap-2">
             <button className="px-4 py-2 rounded border" onClick={() => router.push("/")}>Retour</button>
+            <button
+              className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
+              onClick={() => {
+                setEditForm({
+                  nom: prospect.nom,
+                  entreprise: prospect.entreprise,
+                  email: prospect.email,
+                  telephone: prospect.telephone,
+                  adresse: prospect.adresse,
+                  valeurEstimee: prospect.valeurEstimee || "",
+                });
+                setShowEditModal(true);
+              }}
+            >
+              ✏️ Éditer
+            </button>
             <button
               className="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700"
               onClick={async () => {
@@ -151,8 +199,17 @@ export default function ProspectDetailPage() {
         </div>
 
         <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-lg font-semibold mb-4">Ajouter une interaction</h2>
-          <form onSubmit={onAddInteraction} className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-lg font-semibold">Ajouter une interaction</h2>
+            <button
+              onClick={onAddInteraction}
+              type="button"
+              className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
+            >
+              Ajouter
+            </button>
+          </div>
+          <form onSubmit={onAddInteraction} className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700">Type</label>
               <select className="mt-1 w-full rounded border px-3 py-2" value={type} onChange={(e) => setType(e.target.value as InteractionType)}>
@@ -174,9 +231,6 @@ export default function ProspectDetailPage() {
             <div className="md:col-span-4">
               <label className="block text-sm font-medium text-gray-700">Notes</label>
               <textarea className="mt-1 w-full rounded border px-3 py-2" rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} />
-            </div>
-            <div className="md:col-span-4 flex justify-end">
-              <button type="submit" className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700">Ajouter</button>
             </div>
           </form>
         </div>
@@ -272,6 +326,90 @@ export default function ProspectDetailPage() {
                     disabled={eventLoading}
                   >
                     {eventLoading ? 'Création...' : 'Créer l\'événement'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Modal pour éditer le prospect */}
+        {showEditModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+              <h3 className="text-xl font-bold mb-4">Éditer le prospect</h3>
+              <form onSubmit={handleEditProspect} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Nom</label>
+                  <input
+                    type="text"
+                    className="w-full rounded border px-3 py-2"
+                    value={editForm.nom}
+                    onChange={(e) => setEditForm({ ...editForm, nom: e.target.value })}
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Entreprise</label>
+                  <input
+                    type="text"
+                    className="w-full rounded border px-3 py-2"
+                    value={editForm.entreprise}
+                    onChange={(e) => setEditForm({ ...editForm, entreprise: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                  <input
+                    type="email"
+                    className="w-full rounded border px-3 py-2"
+                    value={editForm.email}
+                    onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Téléphone</label>
+                  <input
+                    type="tel"
+                    className="w-full rounded border px-3 py-2"
+                    value={editForm.telephone}
+                    onChange={(e) => setEditForm({ ...editForm, telephone: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Adresse</label>
+                  <input
+                    type="text"
+                    className="w-full rounded border px-3 py-2"
+                    value={editForm.adresse}
+                    onChange={(e) => setEditForm({ ...editForm, adresse: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Valeur estimée (€)</label>
+                  <input
+                    type="number"
+                    className="w-full rounded border px-3 py-2"
+                    value={editForm.valeurEstimee}
+                    onChange={(e) => setEditForm({ ...editForm, valeurEstimee: e.target.value })}
+                  />
+                </div>
+                <div className="flex gap-2 justify-end pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowEditModal(false)}
+                    className="px-4 py-2 rounded border hover:bg-gray-50"
+                    disabled={isEditLoading}
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
+                    disabled={isEditLoading}
+                  >
+                    {isEditLoading ? 'Sauvegarde...' : 'Sauvegarder'}
                   </button>
                 </div>
               </form>

@@ -224,6 +224,9 @@ export default function Home() {
                 key={prospect.id}
                 prospect={prospect}
                 onDelete={deleteProspect}
+                onStatusChange={async (id, status) => {
+                  await updateProspect(id, { status });
+                }}
               />
             ))}
           </div>

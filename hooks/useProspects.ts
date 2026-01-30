@@ -3,10 +3,12 @@
 import { useState, useEffect } from 'react';
 import { Prospect, Interaction } from '@/types';
 import { supabase } from '@/lib/supabaseClient';
+import { useSession } from 'next-auth/react';
 
 export function useProspects() {
   const [prospects, setProspects] = useState<Prospect[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { data: session } = useSession();
 
   const mapProspect = (record: any): Prospect => ({
     id: record.id,
@@ -51,6 +53,9 @@ export function useProspects() {
 
   // Ajouter un nouveau prospect
   const addProspect = async (prospect: Omit<Prospect, 'id'>) => {
+    // Obtenir le user_id de la session NextAuth
+    const userId = (session?.user as any)?.id || (session as any)?.userId;
+    
     const { data, error } = await supabase
       .from('prospects')
       .insert({
@@ -62,6 +67,7 @@ export function useProspects() {
         status: prospect.status,
         valeur_estimee: prospect.valeurEstimee ?? null,
         date_creation: prospect.dateCreation,
+        user_id: userId, // Associer au user connecté
       })
       .select('*, interactions(*)')
       .single();
