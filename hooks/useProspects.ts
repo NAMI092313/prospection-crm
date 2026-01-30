@@ -53,9 +53,6 @@ export function useProspects() {
 
   // Ajouter un nouveau prospect
   const addProspect = async (prospect: Omit<Prospect, 'id'>) => {
-    // Obtenir le user_id de la session NextAuth
-    const userId = (session?.user as any)?.id || (session as any)?.userId;
-    
     const { data, error } = await supabase
       .from('prospects')
       .insert({
@@ -67,7 +64,7 @@ export function useProspects() {
         status: prospect.status,
         valeur_estimee: prospect.valeurEstimee ?? null,
         date_creation: prospect.dateCreation,
-        user_id: userId, // Associer au user connecté
+        // user_id sera NULL pour l'instant (RLS désactivé)
       })
       .select('*, interactions(*)')
       .single();
