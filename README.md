@@ -18,11 +18,17 @@ Application Next.js (TypeScript, Tailwind CSS v4) pour le suivi de prospection c
 - ✅ Vue Kanban drag-and-drop (7 colonnes par statut)
 - ✅ Compteurs de prospects par statut
 - ✅ Changement de statut via dropdown sur cartes
+- ✅ Page Données (tableau) avec tri
+- ✅ Export / Import Excel (.xlsx/.xls) sans doublons
 
 ### 📅 Intégration Google Calendar
 - ✅ Création d'événements Google Calendar
 - ✅ Lien automatique à la fiche prospect
 - ✅ Authentification OAuth via NextAuth
+
+### ⚙️ Paramètres
+- ✅ Page Paramètres (thème, notifications, affichage)
+- ✅ Thème clair / sombre / auto (persistant)
 
 ### 🔐 Sécurité et données
 - ✅ Authentification NextAuth + Google OAuth
@@ -45,7 +51,9 @@ Application Next.js (TypeScript, Tailwind CSS v4) pour le suivi de prospection c
 ```
 /app               - Next.js App Router
   /api/auth       - NextAuth routes
+  /data           - Page Données (tableau + import/export Excel)
   /prospects      - Pages prospects (grille, détail, création)
+  /settings       - Page Paramètres
 /components        - Composants React (ProspectCard, KanbanBoard, etc.)
 /hooks            - Custom hooks (useProspects pour CRUD)
 /lib              - Utilitaires (supabaseClient, validation)
@@ -87,6 +95,11 @@ NEXTAUTH_URL=http://localhost:3000
 # Supabase
 NEXT_PUBLIC_SUPABASE_URL=https://votre-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=votre_anon_key
+
+# (Optionnel) Azure AD pour Outlook Calendar
+AZURE_AD_CLIENT_ID=votre_client_id
+AZURE_AD_CLIENT_SECRET=votre_client_secret
+AZURE_AD_TENANT_ID=votre_tenant_id
 ```
 
 ### 3. Configuration Google Calendar
@@ -165,6 +178,9 @@ git push origin main
 | `NEXTAUTH_URL` | https://votre-app.vercel.app | Production only |
 | `NEXT_PUBLIC_SUPABASE_URL` | votre_url | Production, Preview, Development |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | votre_clé | Production, Preview, Development |
+| `AZURE_AD_CLIENT_ID` | votre_id | Production, Preview, Development (optionnel) |
+| `AZURE_AD_CLIENT_SECRET` | votre_secret | Production, Preview, Development (optionnel) |
+| `AZURE_AD_TENANT_ID` | votre_tenant | Production, Preview, Development (optionnel) |
 
 5. Cliquer "Deploy"
 
@@ -177,6 +193,7 @@ git push origin main
 - [ ] Skeletons et loading states améliorés
 - [ ] Toast notifications pour les actions
 - [ ] Export CSV/PDF des prospects
+- [ ] Thème avancé (composants dark mode complets)
 - [ ] Statistiques avancées (graphiques, tendances)
 - [ ] Rappels automatiques d'interactions
 - [ ] Audit trail (historique des modifications)
