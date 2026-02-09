@@ -101,6 +101,18 @@ export default function Home() {
                 </button>
               </div>
               <Link
+                href="/data"
+                className="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition"
+              >
+                📈 Données
+              </Link>
+              <Link
+                href="/settings"
+                className="bg-gray-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-gray-700 transition"
+              >
+                ⚙️ Paramètres
+              </Link>
+              <Link
                 href="/prospects/new"
                 className="bg-green-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-green-700 transition"
               >

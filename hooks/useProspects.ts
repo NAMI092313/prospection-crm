@@ -32,20 +32,25 @@ export function useProspects() {
   // Charger les données depuis Supabase au démarrage
   useEffect(() => {
     const load = async () => {
-      const { data, error } = await supabase
-        .from('prospects')
-        .select('*, interactions(*)')
-        .order('date_creation', { ascending: false })
-        .order('date', { foreignTable: 'interactions', ascending: false });
+      try {
+        const { data, error } = await supabase
+          .from('prospects')
+          .select('*, interactions(*)')
+          .order('date_creation', { ascending: false })
+          .order('date', { foreignTable: 'interactions', ascending: false });
 
-      if (error) {
-        console.error('Erreur lors du chargement des prospects:', error);
+        if (error) {
+          console.error('Erreur Supabase:', error.message || JSON.stringify(error));
+          setIsLoading(false);
+          return;
+        }
+
+        setProspects((data || []).map(mapProspect));
         setIsLoading(false);
-        return;
+      } catch (err) {
+        console.error('Exception lors du chargement:', err);
+        setIsLoading(false);
       }
-
-      setProspects((data || []).map(mapProspect));
-      setIsLoading(false);
     };
 
     load();

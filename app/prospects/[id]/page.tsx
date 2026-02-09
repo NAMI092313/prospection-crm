@@ -4,7 +4,6 @@ import { useParams, useRouter } from "next/navigation";
 import { useProspects } from "@/hooks/useProspects";
 import type { InteractionType } from "@/types";
 import { useMemo, useState } from "react";
-import { GoogleCalendarButton } from "@/components/GoogleCalendarButton";
 import { useSession } from "next-auth/react";
 import { validateEmail, validateTelephone } from "@/lib/validation";
 
@@ -215,14 +214,15 @@ export default function ProspectDetailPage() {
             )}
             <p>🗓️ Créé le {new Date(prospect.dateCreation).toLocaleDateString("fr-FR")}</p>
           </div>
-        </div>
-
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-lg font-semibold mb-4">Google Calendar</h2>
-          <GoogleCalendarButton 
-            showCreateButton={true}
-            onCreateEvent={() => setShowEventModal(true)}
-          />
+          <button
+            onClick={() => setShowEventModal(true)}
+            className="mt-4 flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-colors"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            Planifier un rendez-vous
+          </button>
         </div>
 
         <div className="bg-white rounded-lg shadow p-6">

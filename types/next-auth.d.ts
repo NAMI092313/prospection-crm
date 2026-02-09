@@ -6,6 +6,7 @@ declare module 'next-auth' {
     accessToken?: string;
     refreshToken?: string;
     expiresAt?: number;
+    provider?: string;
     user: {
       id?: string;
       email?: string;
@@ -18,6 +19,9 @@ declare module 'next-auth' {
 declare module 'next-auth/jwt' {
   interface JWT {
     accessToken?: string;
+    refreshToken?: string;
+    expiresAt?: number;
+    provider?: string;
     refreshToken?: string;
     expiresAt?: number;
   }
