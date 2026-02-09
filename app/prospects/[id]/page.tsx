@@ -148,7 +148,7 @@ export default function ProspectDetailPage() {
         email: editForm.email,
         telephone: editForm.telephone,
         adresse: editForm.adresse,
-        valeurEstimee: editForm.valeurEstimee ? Number(editForm.valeurEstimee) : null,
+        valeurEstimee: editForm.valeurEstimee ? Number(editForm.valeurEstimee) : undefined,
       });
       alert('✅ Prospect mis à jour avec succès!');
       setShowEditModal(false);
