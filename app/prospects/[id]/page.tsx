@@ -54,7 +54,7 @@ export default function ProspectDetailPage() {
 
   if (!prospect) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
         <div className="max-w-3xl mx-auto px-4 py-8">
           <div className="bg-white rounded-lg shadow p-6">
             <p className="text-gray-700">Prospect introuvable.</p>
@@ -161,7 +161,7 @@ export default function ProspectDetailPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
       <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">
         <div className="flex items-start justify-between">
           <div>

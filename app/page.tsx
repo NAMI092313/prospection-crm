@@ -69,7 +69,7 @@ export default function Home() {
   const conclues = prospects.filter((p) => p.status === "conclu").length;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
       <header className="bg-white shadow">
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="flex justify-between items-center">

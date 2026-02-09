@@ -68,7 +68,7 @@ export default function NewProspectPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
       <div className="max-w-3xl mx-auto px-4 py-8">
         <div className="mb-4">
           <Link href="/" className="inline-flex items-center gap-2 text-sm text-gray-700 hover:text-gray-900">
