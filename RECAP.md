@@ -1,7 +1,7 @@
 # 📋 Récapitulatif du Projet CRM Prospection
 
 **Date de création** : 21 janvier 2026  
-**Objectif** : Application de suivi de prospection pour votre femme
+**Objectif** : Application de suivi de prospection
 
 ---
 
@@ -11,8 +11,8 @@
 - **Framework** : Next.js 16 avec App Router
 - **Langage** : TypeScript
 - **Styling** : Tailwind CSS
-- **Stockage** : localStorage (côté client)
-- **Déploiement** : Vercel avec protection Basic Auth
+- **Stockage** : Supabase (PostgreSQL + RLS)
+- **Déploiement** : Vercel
 
 ### ✅ Fonctionnalités implémentées
 
@@ -21,6 +21,7 @@
 - Affichage en cartes avec infos principales
 - Suppression de prospects
 - Modification du statut
+- Import/Export Excel (.xlsx/.xls) sans doublons
 
 #### 2. Système de statuts
 - `nouveau` → Contact initial
@@ -40,6 +41,16 @@
 - Total de prospects
 - Nombre de nouveaux prospects
 - Nombre de ventes conclues
+
+#### 4.1 Page Données (tableau)
+- Vue tableau avec tri
+- Export Excel
+- Import Excel (sans doublons)
+
+#### 4.2 Page Paramètres
+- Thème clair / sombre / auto (persistant)
+- Préférences notifications
+- Intégrations (Google Calendar)
 
 #### 5. Intégration Google Calendar ✨ NOUVEAU
 - ✅ Connexion avec compte Google (OAuth 2.0 via NextAuth)
@@ -73,8 +84,7 @@
 - Ajout automatique d'une interaction "réunion" lors de la création
 
 #### 6. Sécurité
-- Protection par mot de passe (Basic Auth)
-- Variables d'environnement pour les identifiants
+- Variables d'environnement (OAuth + Supabase)
 
 ---
 
@@ -84,6 +94,10 @@
 prospection-crm/
 ├── app/
 │   ├── page.tsx                    # Page d'accueil (dashboard)
+│   ├── data/
+│   │   └── page.tsx                # Page Données (tableau)
+│   ├── settings/
+│   │   └── page.tsx                # Page Paramètres
 │   ├── layout.tsx                  # Layout principal
 │   ├── globals.css                 # Styles globaux
 │   └── prospects/
@@ -95,11 +109,10 @@ prospection-crm/
 │   ├── ProspectCard.tsx            # Carte d'affichage prospect
 │   └── GoogleCalendarButton.tsx    # Connexion Google Calendar
 ├── hooks/
-│   └── useProspects.ts             # Hook pour gérer localStorage
+│   └── useProspects.ts             # Hook pour gérer Supabase
 ├── types/
 │   ├── index.ts                    # Types TypeScript
 │   └── next-auth.d.ts              # Types NextAuth avec accessToken
-├── middleware.ts                   # Protection Basic Auth
 ├── .env.example                    # Exemple variables d'environnement
 └── README.md                       # Documentation
 ```
@@ -115,13 +128,15 @@ prospection-crm/
 
 ---
 
-## 🔐 Identifiants de protection
+## 🔐 Variables d'environnement
 
-**Variables d'environnement Vercel** :
-- `BASIC_AUTH_USER` = demo (ou votre valeur)
-- `BASIC_AUTH_PASS` = [votre mot de passe]
-
-Ces identifiants protègent l'accès à l'application en ligne.
+**Vercel / Local** :
+- `GOOGLE_CLIENT_ID`
+- `GOOGLE_CLIENT_SECRET`
+- `NEXTAUTH_SECRET`
+- `NEXTAUTH_URL`
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 
 ---
 
@@ -162,13 +177,13 @@ Ces identifiants protègent l'accès à l'application en ligne.
 ```bash
 NEXTAUTH_URL=http://localhost:3000
 NEXTAUTH_SECRET=votre-secret-généré
-NEXT_PUBLIC_GOOGLE_CLIENT_ID=votre-client-id.apps.googleusercontent.com
+GOOGLE_CLIENT_ID=votre-client-id.apps.googleusercontent.com
 GOOGLE_CLIENT_SECRET=votre-client-secret
 ```
 
 **Sur Vercel**:
 1. Project Settings > Environment Variables
-2. Ajoutez les 4 variables ci-dessus avec vos vraies valeurs
+2. Ajoutez les variables ci-dessus avec vos vraies valeurs
 3. Changez `NEXTAUTH_URL` pour votre URL de production
 4. Pour générer `NEXTAUTH_SECRET`: `openssl rand -base64 32`
 
