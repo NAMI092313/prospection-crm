@@ -1,16 +1,43 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { GoogleCalendarButton } from '@/components/GoogleCalendarButton';
+
+type ThemeMode = 'light' | 'dark' | 'auto';
 
 export default function SettingsPage() {
   const [settings, setSettings] = useState({
-    theme: 'light',
+    theme: 'light' as ThemeMode,
     notifications: true,
     emailNotifications: false,
     itemsPerPage: 10,
   });
+
+  const applyTheme = (theme: ThemeMode) => {
+    const root = document.documentElement;
+    if (theme === 'auto') {
+      root.removeAttribute('data-theme');
+    } else {
+      root.setAttribute('data-theme', theme);
+    }
+  };
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('crm_settings');
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      if (parsed) {
+        setSettings((prev) => ({ ...prev, ...parsed }));
+        if (parsed.theme) {
+          applyTheme(parsed.theme as ThemeMode);
+        }
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
 
   const handleToggle = (key: keyof typeof settings) => {
     setSettings((prev) => ({
@@ -20,10 +47,17 @@ export default function SettingsPage() {
   };
 
   const handleSelectChange = (key: keyof typeof settings, value: string | number) => {
-    setSettings((prev) => ({
-      ...prev,
-      [key]: value,
-    }));
+    setSettings((prev) => {
+      const next = {
+        ...prev,
+        [key]: value,
+      };
+      if (key === 'theme') {
+        applyTheme(value as ThemeMode);
+        localStorage.setItem('crm_settings', JSON.stringify(next));
+      }
+      return next;
+    });
   };
 
   const handleSave = () => {
